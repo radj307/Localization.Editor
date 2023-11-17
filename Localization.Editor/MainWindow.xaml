@@ -1,0 +1,176 @@
+﻿<Window
+    x:Class="Localization.Editor.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:Localization.Editor"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:Localization.Editor.ViewModels"
+    Title="Translation Config Editor"
+    Width="800"
+    Height="450"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <local:ChainConverter x:Key="NullToVis">
+            <local:NullToBoolConverter />
+            <BooleanToVisibilityConverter />
+        </local:ChainConverter>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--  v File Loader v  -->
+        <Border
+            BorderBrush="DarkGray"
+            BorderThickness="0,0,1,0"
+            DockPanel.Dock="Left">
+            <Expander ExpandDirection="Right" Header="File">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ListBox ItemsSource="{Binding ViewModel.Languages}" SelectedItem="{Binding ViewModel.CurrentLanguage}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListBoxItem}">
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu>
+                                            <MenuItem Header="Unload" ToolTip="Unloads the specified file without saving changes." />
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+
+                    <Button
+                        x:Name="LoadFileButton"
+                        Grid.Row="1"
+                        Click="LoadFileButton_Click"
+                        Content="Load File..." />
+                </Grid>
+            </Expander>
+        </Border>
+        <!--  ^ File Loader ^  -->
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <TextBox
+                x:Name="PathBox"
+                Grid.ColumnSpan="3"
+                Margin="3"
+                VerticalContentAlignment="Center"
+                PreviewTextInput="PathBox_TextInput"
+                Text="{Binding ViewModel.CurrentPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <i:Interaction.Behaviors>
+                    <local:UpdateBindingOnKeyPressBehavior Key="Return" TargetDependencyPropertyName="TextProperty" />
+                    <local:TextBoxAutocompleteBehavior CancelOnLostFocus="True" ItemsSource="{Binding PathBoxAutocompleteSource}" />
+                </i:Interaction.Behaviors>
+            </TextBox>
+
+            <TreeView
+                x:Name="NodeNavigator"
+                Grid.Row="1"
+                Margin="3"
+                Padding="0,0,8,0"
+                ItemsSource="{Binding ViewModel.CurrentLanguage.Children}"
+                SelectedItemChanged="NodeNavigator_SelectedItemChanged">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+
+                        <Setter Property="FontWeight" Value="Regular" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <TreeView.Resources>
+                    <HierarchicalDataTemplate DataType="{x:Type vm:TreeNode}" ItemsSource="{Binding Children}">
+                        <Grid>
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Text="{Binding Name}"
+                                Visibility="Hidden" />
+                        </Grid>
+                    </HierarchicalDataTemplate>
+                </TreeView.Resources>
+            </TreeView>
+
+            <GridSplitter
+                Grid.Row="1"
+                Grid.Column="1"
+                Width="3"
+                HorizontalAlignment="Center"
+                Background="DarkGray" />
+
+            <ContentControl
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="3"
+                Content="{Binding SelectedItem, ElementName=NodeNavigator}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate DataType="{x:Type vm:TreeNode}">
+                        <Grid Visibility="{Binding Converter={StaticResource NullToVis}}">
+                            <TextBox
+                                Margin="5,3"
+                                AcceptsReturn="True"
+                                AcceptsTab="True"
+                                Text="{Binding Value}"
+                                Visibility="{Binding HasValue, Converter={StaticResource BoolToVis}}">
+                                <i:Interaction.Behaviors>
+                                    <local:EditorTextBoxBehavior />
+                                </i:Interaction.Behaviors>
+                            </TextBox>
+
+                            <Grid Visibility="{Binding HasChildren, Converter={StaticResource BoolToVis}}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Margin="5,3"
+                                    FontWeight="SemiBold"
+                                    Text="Children" />
+
+                                <ItemsControl
+                                    Grid.Row="1"
+                                    Margin="5,3"
+                                    ItemsSource="{Binding Children}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type vm:TreeNode}">
+                                            <TextBox Margin="5,1" Text="{Binding Name}">
+                                                <i:Interaction.Behaviors>
+                                                    <local:UpdateBindingOnKeyPressBehavior Key="Return" TargetDependencyPropertyName="TextProperty" />
+                                                </i:Interaction.Behaviors>
+                                            </TextBox>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
+
+        </Grid>
+    </DockPanel>
+</Window>

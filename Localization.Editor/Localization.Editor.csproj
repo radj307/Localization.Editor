@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="TestConfigs\en.loc.json" />
+    <None Remove="TestConfigs\zz.loc.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestConfigs\en.loc.json" />
+    <EmbeddedResource Include="TestConfigs\zz.loc.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fody" Version="6.8.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
+    <PackageReference Include="PropertyChanged.Fody" Version="4.1.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="radj307.Localization" Version="0.3.1" />
+    <PackageReference Include="radj307.Localization.Json" Version="0.3.1" />
+    <PackageReference Include="radj307.Localization.WPF" Version="0.3.1" />
+    <PackageReference Include="radj307.Localization.Xml" Version="0.3.1" />
+    <PackageReference Include="radj307.Localization.Yaml" Version="0.3.1" />
+  </ItemGroup>
+
+</Project>
